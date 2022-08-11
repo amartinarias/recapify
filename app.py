@@ -63,6 +63,20 @@ def get_artist():
         return str(items['name'])
 
 
+@app.route('/getRecentlyPlayed')
+def get_recently_played():
+    try:
+        token_info = get_token()
+    except:
+        print("user not logged in")
+        return redirect("/")
+    sp = spotipy.Spotify(auth=token_info['access_token'])
+    results = sp.current_user_recently_played(limit=20)
+    for items in results['items']:
+        return (f"This is your most recently played song: {str(items['track']['name'])} "
+                f"by {str(items['track']['album']['name'])}")
+
+
 def get_token():
     token_info = session.get(TOKEN_INFO, None)
     if not token_info:
