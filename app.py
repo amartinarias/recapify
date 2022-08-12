@@ -1,15 +1,16 @@
-from flask import Flask, request, url_for, session, redirect
+from flask import Flask, request, url_for, session, redirect, render_template
 import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 import time
 from creds import *
+from main import get_recently_played_song
+
 
 app = Flask(__name__)
 
-
 # signs the session cookie
-app.secret_key = "aaiurhpUSDHqo837xron"
-app.config['SESSION_COOKIE_NAME'] = "Lydia's Cookie" # session allows you to log in during the same session
+app.secret_key = "d5cf15a0d4b04e5699ec1d0e769e6177"
+app.config['SESSION_COOKIE_NAME'] = "Lydia's Cookie"  # session allows you to log in during the same session
 TOKEN_INFO = "token_info"
 
 
@@ -71,10 +72,8 @@ def get_recently_played():
         print("user not logged in")
         return redirect("/")
     sp = spotipy.Spotify(auth=token_info['access_token'])
-    results = sp.current_user_recently_played(limit=20)
-    for items in results['items']:
-        return (f"This is your most recently played song: {str(items['track']['name'])} "
-                f"by {str(items['track']['album']['name'])}")
+    last_song_played = get_recently_played_song
+    return render_template("recently_played.html", get_recently_played=last_song_played)
 
 
 def get_token():
@@ -91,12 +90,13 @@ def get_token():
 
 def create_spotify_oauth():
     return SpotifyOAuth(
-            client_id=client_ID,
-            client_secret=client_SECRET,
-            redirect_uri=url_for('redirect_page', _external=True),
-            scope="user-library-read")
+        client_id=SPOTIPY_CLIENT_ID,
+        client_secret=SPOTIPY_CLIENT_SECRET,
+        redirect_uri=url_for('redirect_page', _external=True),
+        scope="user-library-read")
 
 
 app.run(debug=True)
 if __name__ == "__main__":
     app.run(debug=True)
+
